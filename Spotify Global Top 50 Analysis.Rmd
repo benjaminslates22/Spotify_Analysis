@@ -1,0 +1,116 @@
+---
+title: "Spotify Global Top 50 Analysis"
+author: "Benjamin Slates"
+date: "6/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In this project I'll be using the Spotify API to gather data on the songs that currently reside in the Global Top 50 Playlist at the time of this project. The data set will consist of variables for the tempo, key, mode, duration, and many other elements of each song, as well as variables such as energy, danceability, valance, and more that convey the feelings of the songs with numeric variables calculated by Spotify. 
+
+The aim of this project is to uncover similarities and trends between the songs in the Global Top 50 Playlist in order to better understand what music listeners are catering to at the moment (June 30, 2021).
+
+First, I'll start by calling the R packages necessary for this analysis. The main package I'll be working with will be spotifyr which is what enables you to pull data from Spotify API within R Studio.
+
+```{r}
+library(spotifyr)
+library(alr4)
+library(alr4)
+library(knitr)
+library(tidyverse)
+library(ggridges)
+
+```
+
+To gain access to the Spotify API I'll need to get an access token by entering my client ID and Client Secret given to me upon creating my Spotify for Developers account.
+
+```{r}
+Sys.setenv(SPOTIFY_CLIENT_ID = '6699693e767b405cae460035e4c5b45d')
+Sys.setenv(SPOTIFY_CLIENT_SECRET = '2408b7ec23a943be8d9623b7dbb38c92')
+
+access_token <- get_spotify_access_token()
+```
+
+Now I'm ready to pull the data from the Global Top 50 playlist into a data frame.
+
+```{r}
+
+Top50 <- get_playlist_audio_features(playlist_uris = '37i9dQZEVXbMDoHDwVN2tF')
+
+```
+
+Before I can start the analysis I'll need to add one extra column to the data set labeling each song's chart position.
+
+```{r}
+Top50$Position <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 ,15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50)
+```
+
+I'll start the analysis by seeing what the most frequent keys in the playlist is.
+
+```{r}
+
+Top50 %>% 
+    count(key_mode, sort = TRUE) %>% 
+    head(10) %>% 
+    kable()
+
+```
+
+We can see that F# minor is the most common key in the playlist with 6 songs falling under that key, and C major is in close second with 5 appearance.
+
+Next, by counting the modes of each song we can see that the majority of the tracks are in a major key.
+
+```{r}
+Top50 %>% 
+    count(mode, sort = TRUE) %>% 
+    head(2) %>% 
+    kable()
+
+
+```
+
+By taking a quick average it appears that the mean tempo of the playlist is 124.41 beats per minute, which is to be expected with the average pop song typically falling around 120bpm.
+
+```{r}
+
+mean(Top50$tempo)
+
+```
+
+I'm interest to know whether or not happy songs are being favored by listeners at the moment so I'll create a few different tables to look at the relationship between valence (a measure from 0 - 1 describing the positiveness of a song) and chart position.
+
+
+```{r}
+Top50 %>% 
+    arrange(Position) %>% 
+    select(Position, track.name, valence) %>% 
+    head(10) %>% 
+    kable()
+
+
+
+```
+
+
+```{r}
+Top50 %>% 
+    arrange(-valence) %>% 
+    select(Position, track.name, valence) %>% 
+    head(10) %>% 
+    kable()
+    
+    
+
+```
+
+The results of the first table show that 8 of the top 10 songs in playlist have a valence over 50%, meaning they are to some degree "happy sounding" songs. The second tables results back up the information from the first table by showing that 7 of the 10 highest valence songs in the playlist reside in the top 25.
+
+The results of this analysis have suggested that at the moment music listeners are searching for upbeat, positive songs to take their minds off the last year and half and carry them into the summer. If a label or artist can implement these insights into their song writing process they just have a hit on their hands.
+
+
+
+
+
